@@ -1,0 +1,13 @@
+{
+  "name": "mern-crud-lab",
+  "version": "1.0.0",
+  "description": "MERN Lab Task 1 - CRUD on an array of items using HTML, CSS, Express.js and a REST API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
