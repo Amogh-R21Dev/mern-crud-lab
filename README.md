@@ -1,217 +1,203 @@
-# Item Manager - MERN Lab Task 1
-
-**Aim:** Develop a front end for CRUD operations on an array of items using **HTML, CSS, Express.js and a REST API**.
-
-Items (name and price) are stored in an array on the Express server. The browser page lets you create, read, update and delete them by calling REST API endpoints.
-
-## Technologies used and where to find them
-
-| Technology | Role in this project | File |
-|---|---|---|
-| **HTML** | Structure of the page: the form (Name, Price, Submit) and the table (ID, Name, Price, Action) | [`public/index.html`](public/index.html) |
-| **CSS** | Styling: neo-brutalist look, dotted background, buttons | [`public/style.css`](public/style.css) |
-| **JavaScript (fetch)** | Calls the REST API and draws the table | [`public/script.js`](public/script.js) |
-| **Express.js** | Web server, serves the page, holds the items array, defines the routes | [`server.js`](server.js) |
-| **REST API** | `GET`, `POST`, `PUT`, `DELETE` on `/api/items` | [`server.js`](server.js) |
-
-
+# MERN Lab Task 1 - CRUD Front End
 
 ## Output
 
-**Initial page**
+Entry page with no items
 
-![Initial page](screenshots/output-1-initial.png)
+![Output 1](screenshots/output1.png)
 
-**After adding two items (Book 250, Pen 25)**
+After adding 3 items
 
-![Two items added](screenshots/output-2-items-added.png)
+![Output 2](screenshots/output2.png)
 
-## 1. HTML - `public/index.html`
+After deleting an item
 
-Defines the form with Name and Price fields and a Submit button, and the table with the columns ID, Name, Price and Action. The rows are filled in by `script.js`.
+![Output 3](screenshots/output3.png)
 
+## Code
+
+### index.html
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Item Manager</title>
+  <title>Items</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Item Manager</h1>
-  <form>
-    <label for="nm">Name</label>
-    <input id="nm" required>
-    <label for="pr">Price</label>
-    <input id="pr" type="number" required>
-    <button id="sb">Submit</button>
+  <h2>Items</h2>
+
+  <form id="form">
+    Name: <input type="text" id="name" required><br><br>
+    Price: <input type="number" id="price" required><br><br>
+    <button type="submit">Submit</button>
   </form>
+
+  <br>
+
   <table>
     <thead>
       <tr><th>ID</th><th>Name</th><th>Price</th><th>Action</th></tr>
     </thead>
-    <tbody id="tb"></tbody>
+    <tbody id="tbody"></tbody>
   </table>
+
   <script src="script.js"></script>
 </body>
 </html>
 ```
 
-## 2. CSS - `public/style.css`
-
-Styles the page with thick black borders, hard shadows and a dotted background. The Edit and Delete buttons have their own colours.
-
+### style.css
 ```css
 body {
-  font-family: 'Courier New', monospace;
-  background: radial-gradient(#000 1.5px, transparent 1.5px) 0 0 / 22px 22px, #ffe14d;
+  font-family: Arial, sans-serif;
+  background: #f5f6f8;
+  margin: 0;
+  padding: 40px 20px;
+  color: #222;
 }
-h1 { text-align: center; text-transform: uppercase; font-size: 38px; }
-form, table {
-  width: 560px; box-sizing: border-box; margin: 28px auto; background: #fff;
-  border: 3px solid #000; box-shadow: 8px 8px 0 #000;
+
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
 }
-form { display: grid; grid-template-columns: 90px 1fr; gap: 14px; align-items: center; padding: 22px; }
-input { border: 3px solid #000; padding: 8px; font: inherit; }
+
+form {
+  background: #fff;
+  border: 1px solid #d5d8dd;
+  border-radius: 6px;
+  padding: 20px;
+  width: 300px;
+  margin: 0 auto 30px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #2f6fed;
+}
+
 button {
-  grid-column: 2; font: bold 15px monospace; padding: 8px 14px;
-  border: 3px solid #000; background: #ff6fb5; box-shadow: 4px 4px 0 #000; cursor: pointer;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 4px;
+  background: #2f6fed;
+  color: #fff;
+  cursor: pointer;
 }
-button:active { transform: translate(4px, 4px); box-shadow: none; }
-table { border-collapse: collapse; }
-th { background: #000; color: #ffe14d; }
-th, td { border: 3px solid #000; padding: 10px; text-align: center; }
-td button { grid-column: auto; margin: 2px; }
-td button:first-child { background: #6fe3ff; }
+
+button:hover {
+  background: #1f5bd0;
+}
+
+table {
+  border-collapse: collapse;
+  background: #fff;
+  width: 550px;
+  margin: 0 auto;
+}
+
+th, td {
+  border: 1px solid #d5d8dd;
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background: #eceff3;
+}
+
+.edit { background: #e0a800; }
+.edit:hover { background: #c79300; }
+.del { background: #d9534f; }
+.del:hover { background: #c1403c; }
 ```
 
-## 3. Express.js - `server.js`
-
-- Creates the Express app and turns on `express.json()` (reads JSON request bodies) and `express.static('public')` (serves the HTML, CSS and JS files).
-- Keeps the data in an array: `let items = []`.
-- Defines the REST routes and starts the server on port 3000.
-
+### script.js
 ```js
-const express = require('express');
-const app = express();
-app.use(express.json(), express.static('public'));
+const url = "/products"
+const form = document.getElementById("form")
+const nameInput = document.getElementById("name")
+const priceInput = document.getElementById("price")
+const tbody = document.getElementById("tbody")
+let editId = null
 
-let items = [], n = 1;
-
-app.get('/api/items', (q, r) => r.json(items));
-
-app.post('/api/items', (q, r) => {
-  const i = { id: n++, ...q.body };
-  items.push(i);
-  r.json(i);
-});
-
-app.put('/api/items/:id', (q, r) => {
-  const i = items.find(x => x.id == q.params.id);
-  Object.assign(i, q.body);
-  r.json(i);
-});
-
-app.delete('/api/items/:id', (q, r) => {
-  items = items.filter(x => x.id != q.params.id);
-  r.json({ ok: true });
-});
-
-app.listen(3000, () => console.log('http://localhost:3000'));
-```
-
-## 4. REST API - `/api/items`
-
-| Operation | HTTP method | Endpoint | What the server does |
-|---|---|---|---|
-| Create | POST | `/api/items` | Adds a new item to the array |
-| Read | GET | `/api/items` | Returns all items as JSON |
-| Update | PUT | `/api/items/:id` | Changes the item with that id |
-| Delete | DELETE | `/api/items/:id` | Removes the item with that id |
-
-**Testing the API from the terminal** (Linux/macOS syntax; on Windows PowerShell use `curl.exe`, or use Postman):
-
-```bash
-curl -s -X POST localhost:3000/api/items -H 'Content-Type: application/json' -d '{"name":"Book","price":250}'
-curl -s -X POST localhost:3000/api/items -H 'Content-Type: application/json' -d '{"name":"Pen","price":25}'
-curl -s localhost:3000/api/items
-curl -s -X PUT localhost:3000/api/items/2 -H 'Content-Type: application/json' -d '{"name":"Pen","price":30}'
-curl -s -X DELETE localhost:3000/api/items/1
-curl -s localhost:3000/api/items
-```
-
-Result of these calls:
-
-![REST API test](screenshots/api-test-terminal.png)
-
-`GET /api/items` opened in the browser:
-
-![GET in browser](screenshots/api-get-in-browser.png)
-
-## 5. Connecting front end and API - `public/script.js`
-
-`load()` calls `GET /api/items` and builds the table rows. The form's submit handler sends `POST` (new item) or `PUT` (when editing). `del()` sends `DELETE`.
-
-```js
-const A = '/api/items';
-let items = [], eid = null;
-
+// GET all products and show in table
 async function load() {
-  items = await (await fetch(A)).json();
-  tb.innerHTML = items.map(i => `<tr>
-    <td>${i.id}</td><td>${i.name}</td><td>₹${i.price}</td>
-    <td><button onclick="edit(${i.id})">Edit</button>
-    <button onclick="del(${i.id})">Delete</button></td></tr>`).join('');
+  const res = await fetch(url)
+  const items = await res.json()
+  tbody.innerHTML = ""
+
+  items.forEach((p) => {
+    const { id, name, price } = p
+    const row = tbody.insertRow()
+    row.insertCell().textContent = id
+    row.insertCell().textContent = name
+    row.insertCell().textContent = price
+
+    const action = row.insertCell()
+
+    const editBtn = document.createElement("button")
+    editBtn.textContent = "Edit"
+    editBtn.className = "edit"
+    editBtn.onclick = () => edit(p)
+
+    const delBtn = document.createElement("button")
+    delBtn.textContent = "Delete"
+    delBtn.className = "del"
+    delBtn.onclick = () => del(id)
+
+    action.appendChild(editBtn)
+    action.appendChild(delBtn)
+  })
 }
 
-document.forms[0].onsubmit = async e => {
-  e.preventDefault();
-  await fetch(eid ? `${A}/${eid}` : A, {
-    method: eid ? 'PUT' : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: nm.value, price: +pr.value })
-  });
-  eid = null; e.target.reset(); sb.textContent = 'Submit'; load();
-};
+// POST (add) or PUT (update) on submit
+form.addEventListener("submit", async (e) => {
+  e.preventDefault()
+  const name = nameInput.value
+  const price = Number(priceInput.value)
 
-function edit(id) {
-  const i = items.find(x => x.id == id);
-  eid = id; nm.value = i.name; pr.value = i.price; sb.textContent = 'Update';
-}
-
-async function del(id) {
-  if (confirm('Delete this item?')) {
-    await fetch(`${A}/${id}`, { method: 'DELETE' });
-    load();
+  if (editId === null) {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, price })
+    })
+  } else {
+    await fetch(url + "/" + editId, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, price })
+    })
+    editId = null
   }
+
+  form.reset()
+  load()
+})
+
+// Fill the form with the selected product
+function edit(p) {
+  const { id, name, price } = p
+  nameInput.value = name
+  priceInput.value = price
+  editId = id
 }
 
-onmousemove = e => document.body.style.backgroundPosition =
-  e.clientX / 15 + 'px ' + e.clientY / 15 + 'px';
-load();
-```
+// DELETE a product by id
+async function del(id) {
+  await fetch(url + "/" + id, { method: "DELETE" })
+  load()
+}
 
-## How to run
-
-```bash
-git clone https://github.com/Amogh-R21Dev/mern-crud-lab.git
-cd mern-crud-lab
-npm install
-npm start
-```
-
-Open **http://localhost:3000** in your browser.
-
-## Project structure
-
-```
-mern-crud-lab/
-├── server.js          Express server + REST API
-├── package.json
-├── public/
-│   ├── index.html     HTML
-│   ├── style.css      CSS
-│   └── script.js      Front-end logic (fetch)
-└── screenshots/       Output images used in this README
+load()
 ```
