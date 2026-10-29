@@ -14,19 +14,7 @@ Items (name and price) are stored in an array on the Express server. The browser
 | **Express.js** | Web server, serves the page, holds the items array, defines the routes | [`server.js`](server.js) |
 | **REST API** | `GET`, `POST`, `PUT`, `DELETE` on `/api/items` | [`server.js`](server.js) |
 
-## How it works
 
-```mermaid
-flowchart LR
-    A["Browser<br/>HTML + CSS + script.js"] -- "fetch (GET / POST / PUT / DELETE)<br/>/api/items" --> B["Express.js server<br/>server.js"]
-    B -- "reads / changes" --> C[("items array")]
-    B -- "JSON response" --> A
-```
-
-1. The user fills the form and clicks **Submit**.
-2. `script.js` sends a `fetch` request to the Express server.
-3. Express changes the `items` array and replies with JSON.
-4. `script.js` requests the list again (`GET`) and redraws the table.
 
 ## Output
 
